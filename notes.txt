@@ -1,0 +1,12 @@
+
+composer require slim/slim
+composer require slim/psr7
+
+// remember setting autoload in composer.json and then run the following code:
+composer dump-autoload
+
+// to implement dependency injection container
+composer require php-di/php-di
+
+//import the php-di class
+use DI\Container
