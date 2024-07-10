@@ -4,16 +4,25 @@ declare(strict_types=1);
 
 namespace App;
 
+use Config\Definitions;
 use PDO;
 
 class Database
 {
+  public function __construct(
+    private string $host = Definitions::HOST,
+    private string $port = Definitions::PORT,
+    private string $dbName = Definitions::DB_NAME,
+    private string $user = Definitions::USER,
+    private string $password = Definitions::PASSWORD
+  ) {
+  }
+
   public function getConnection(): PDO
   {
-    $dsn = "pgsql:host=192.168.115.144;port=5432;dbname=seedlingNursery";
-    $pdo = new PDO($dsn, 'postgres', '1234', [
+    $dsn = "pgsql:host=$this->host;port=$this->port;dbname=$this->dbName";
+    return new PDO($dsn, $this->user, $this->password, [
       PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
     ]);
-    return $pdo;
   }
 }
