@@ -10,3 +10,6 @@ composer require php-di/php-di
 
 //import the php-di class
 use DI\Container
+
+// install validation package valitron
+composer require vlucas/valitron

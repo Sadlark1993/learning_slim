@@ -2,12 +2,15 @@
 
 declare(strict_types=1);
 
+use App\Controllers\ProductIndex;
 use App\Database;
 use Slim\Factory\AppFactory;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use Config\Definitions;
 use App\Repositories\ProductRepository;
+use App\Middleware\AddJsonResponseHeader;
+//use App\Middleware\GetProduct;
 
 //dependency injection container
 //use DI\Container;
@@ -22,29 +25,21 @@ require_once dirname(__DIR__) . '/vendor/autoload.php';
 
 $app = AppFactory::create();
 
-$app->get('/api/products', function (ServerRequestInterface $request, ResponseInterface $response) {
+// to get body in the requisitions and decode
+$app->addBodyParsingMiddleware();
 
-  $database = new Database(Definitions::HOST, Definitions::PORT, Definitions::DB_NAME, Definitions::USER, Definitions::PASSWORD);
-  $repository = new ProductRepository($database);
-  $data = $repository->getAll();
+// error handling
+$error_middleware = $app->addErrorMiddleware(true, true, true);
+$error_handler = $error_middleware->getDefaultErrorHandler();
+$error_handler->forceContentType('application/json');
 
-  $body = json_encode($data);
-  $response->getBody()->write($body);
-  return $response->withHeader('Content-Type', 'application/json');
-});
+//sets the header of the responses through middleware
+$app->add(new AddJsonResponseHeader);
 
-$app->get('/api/products/{id:[0-9]+}', function (ServerRequestInterface $request, ResponseInterface $response, array $args) {
-  $id = $args['id'];
-  $repository = new ProductRepository();
-  $product = $repository->getById((int) $id);
-
-  // not found exeption
-  if ($product === false) {
-    throw new \Slim\Exception\HttpNotFoundException($request, message: 'product not found');
-  }
-
-  $response->getBody()->write(json_encode($product));
-  return $response->withHeader('Content-Type', 'application/json');
-});
-
+$database = new Database();
+$app->get('/api/products', new ProductIndex);
+$app->get('/api/products/{id:[0-9]+}', App\Controllers\Products::class . ':show')->add(new App\Middleware\GetProduct(new ProductRepository($database)));
+$app->post('/api/products', [App\Controllers\Products::class, 'create']);
+$app->patch('/api/products/{id:[0-9]+}', App\Controllers\Products::class . ':update')->add(new App\Middleware\GetProduct(new ProductRepository($database)));
+$app->delete('/api/products/{id:[0-9]+}', App\Controllers\Products::class . ':delete');
 $app->run();
