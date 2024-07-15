@@ -3,14 +3,13 @@
 declare(strict_types=1);
 
 use App\Controllers\ProductIndex;
-use App\Database;
 use Slim\Factory\AppFactory;
-use Psr\Http\Message\ServerRequestInterface;
-use Psr\Http\Message\ResponseInterface;
-use Config\Definitions;
+use App\Database;
 use App\Repositories\ProductRepository;
 use App\Middleware\AddJsonResponseHeader;
 //use App\Middleware\GetProduct;
+
+use App\Controllers\Products;
 
 //dependency injection container
 //use DI\Container;
@@ -38,8 +37,8 @@ $app->add(new AddJsonResponseHeader);
 
 $database = new Database();
 $app->get('/api/products', new ProductIndex);
-$app->get('/api/products/{id:[0-9]+}', App\Controllers\Products::class . ':show')->add(new App\Middleware\GetProduct(new ProductRepository($database)));
-$app->post('/api/products', [App\Controllers\Products::class, 'create']);
-$app->patch('/api/products/{id:[0-9]+}', App\Controllers\Products::class . ':update')->add(new App\Middleware\GetProduct(new ProductRepository($database)));
-$app->delete('/api/products/{id:[0-9]+}', App\Controllers\Products::class . ':delete');
+$app->get('/api/products/{id:[0-9]+}', Products::class . ':show')->add(new App\Middleware\GetProduct(new ProductRepository($database)));
+$app->post('/api/products', [Products::class, 'create']);
+$app->patch('/api/products/{id:[0-9]+}', Products::class . ':update')->add(new App\Middleware\GetProduct(new ProductRepository($database)));
+$app->delete('/api/products/{id:[0-9]+}', Products::class . ':delete')->add(new App\Middleware\GetProduct(new ProductRepository($database)));
 $app->run();

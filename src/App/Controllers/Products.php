@@ -91,6 +91,6 @@ class Products
     ]);
 
     $response->getBody()->write($body);
-    return $response->withStatus(204);
+    return $response->withStatus(200);
   }
 }
